@@ -5,24 +5,41 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 const BubbleChart = ({ data }) => {
+  console.log("bubble data", data);
   const chartData = {
     datasets: [
       {
         label: 'Bubble Chart',
-        data: data.map((item, i) => ({
-          x: i + 1,
-          y: item.intensity,
-          r: item.likelihood * 10,
+        data: data.map((item) => ({
+          x: item.x,
+          y: item.y,
+          r: item.r,
         })),
         backgroundColor: 'rgb(75, 192, 192)',
       },
     ],
+    
+  };
+
+  const options = {
+    scales: {
+      x: {
+        type: 'linear',
+        position: 'bottom',
+      },
+      y: {
+        type: 'linear',
+      },
+    
+    },
+
+  
   };
 
   return (
     <div className="flex flex-col gap-5 p-10 rounded-md border">
       <h1 className="text-lg font-semibold">Bubble chart</h1>
-      <Bubble data={chartData} />
+      <Bubble data={chartData} options={options} />
     </div>
   );
 };
