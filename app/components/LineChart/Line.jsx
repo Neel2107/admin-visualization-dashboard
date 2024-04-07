@@ -8,23 +8,23 @@ Chart.register(...registerables);
 const LineChart = ({ data }) => {
   const { theme } = useTheme();
 
+  const years = Object.keys(data).sort();
+  const pestles = [...new Set(Object.values(data).flatMap(Object.keys))];
+
   const chartData = {
-    labels: Object.keys(data),
-    datasets: [
-      {
-        label: "Years",
-        data: Object.values(data),
-        fill: false,
-        backgroundColor: "rgb(75, 192, 192)",
-        borderColor: "rgba(75, 192, 192, 0.2)",
-      },
-    ],
+    labels: years,
+    datasets: pestles.map((pestle, i) => ({
+      label: pestle,
+      data: years.map(year => data[year][pestle] || 0),
+      fill: false,
+      borderColor: `hsl(${i * 360 / pestles.length}, 70%, 50%)`,
+    })),
   };
 
   const options = {
     scales: {
       y: {
-        min: 2000,
+        beginAtZero: true,
       },
     },
     plugins: {
@@ -37,8 +37,8 @@ const LineChart = ({ data }) => {
   };
 
   return (
-    <div className="flex flex-col gap-5 p-10 rounded-md border dark:border-zinc-700 ">
-      <h1 className="text-lg font-semibold" >Years</h1>
+    <div className="flex flex-col gap-5 p-10 rounded-md border dark:border-zinc-700">
+      <h1 className="text-lg font-semibold" >Pestle by Years</h1>
       <Line data={chartData} options={options} />
     </div>
   );
