@@ -5,7 +5,6 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 const BubbleChart = ({ data }) => {
-  console.log("data", data);
 
   const chartData = {
     datasets: [
