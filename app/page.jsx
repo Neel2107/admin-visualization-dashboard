@@ -8,6 +8,7 @@ import BubbleChart from "./components/Bubble/Bubble";
 import PieChart from "./components/PieChart/PieChart";
 import StackedBar from "./components/StackedBar/StackedBar";
 import DoughnutChart from "./components/Doughnut/DoughnutChart";
+import RadarChart from "./components/RadarChart/RadarChart";
 
 export default function Home() {
   const [areaData, setAreaData] = useState([]);
@@ -16,8 +17,8 @@ export default function Home() {
   const [lineData, setLineData] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [stackedBarData, setStackedBarData] = useState([]);
-  const [doughnutChartData, setDoughnutChartData] = useState([]);
   const [bubbleData, setBubbleData] = useState([]);
+  const [radarChartData, setRadarChartData] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/data")
@@ -25,7 +26,7 @@ export default function Home() {
       .then((data) => {
         console.log(data);
 
-        setAreaData(data.map((item) => item.intensity).slice(0, 20));
+        setAreaData(data.map((item) => item.intensity).slice(0, 1000));
 
         setBarData(
           data
@@ -92,19 +93,24 @@ export default function Home() {
 
         setLineData(pestleYearCounts);
 
-        const counts = data
+        const energyData = data
+          .filter((item) => item.sector === "Energy" && item.intensity)
+          .reduce((acc, item) => {
+            acc[item.intensity] = (acc[item.intensity] || 0) + 1;
+            return acc;
+          }, {});
+
+        const financialServicesData = data
           .filter(
-            (item) =>
-              (item.sector === "Energy" ||
-                item.sector === "Financial services") &&
-              item.intensity
+            (item) => item.sector === "Financial services" && item.intensity
           )
           .reduce((acc, item) => {
             acc[item.intensity] = (acc[item.intensity] || 0) + 1;
             return acc;
           }, {});
 
-        const chartData = Object.entries(counts)
+        // Convert the counts objects to arrays of objects each with x, y, and r properties
+        const energyChartData = Object.entries(energyData)
           .map(([x, count]) => ({
             x: Number(x),
             y: count,
@@ -112,16 +118,60 @@ export default function Home() {
           }))
           .slice(0, 20);
 
-        setBubbleData(chartData);
+        const financialServicesChartData = Object.entries(financialServicesData)
+          .map(([x, count]) => ({
+            x: Number(x),
+            y: count,
+            r: count / 2,
+          }))
+          .slice(0, 20);
+
+        // Store the processed data in the state variable
+        setBubbleData([
+          {
+            label: "Energy",
+            data: energyChartData,
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+          },
+          {
+            label: "Financial Services",
+            data: financialServicesChartData,
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+          },
+        ]);
+
+        // Filter out data for United States of America and group by topic
+        const usaData = data.filter(
+          (item) => item.country === "United States of America"
+        );
+        const topicCounts2 = usaData.reduce((acc, item) => {
+          const topic = item.topic;
+          if (topic) {
+            acc[topic] = (acc[topic] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        // Convert the counts object to an array of objects each with a topic and count property
+        const radarChartData = Object.entries(topicCounts2).map(
+          ([topic, count]) => ({
+            topic,
+            count,
+          })
+        );
+
+        // Store the processed data in the state variable
+        setRadarChartData(radarChartData);
       });
   }, []);
 
   return (
     <div className="flex flex-col gap-10 py-10 lg:w-2/3 lg:mx-auto  ">
-      <Line data={lineData} />
       <StackedBar data={stackedBarData} />
+      <Line data={lineData} />
       <AreaChart data={areaData} />
       <BarChart data={barData} />
+      <RadarChart data={radarChartData} />
       <BubbleChart data={bubbleData} />
       <PieChart data={pieData} />
       {/* <DoughnutChart data={doughnutChartData} /> */}

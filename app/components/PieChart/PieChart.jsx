@@ -43,7 +43,9 @@ const PieChart = ({ data }) => {
     <div className="flex max-h-[85vh]  items-center flex-col gap-5 p-10 rounded-md border dark:border-zinc-700">
       <h1 className="text-lg self-start font-semibold">Topic Distribution</h1>
 
-      <Pie data={chartData} options={options} />
+      <div style={{width: '500px', height: '500px'}}>
+        <Pie data={chartData} options={options} />
+      </div>
     </div>
   );
 };
